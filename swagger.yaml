@@ -1,0 +1,223 @@
+openapi: 3.0.0
+info:
+  title: Battle Microservice
+  version: 1.0.0
+  description: Service de gestion des différents types de batailles dans le jeu.
+
+paths:
+  /:
+    get:
+      summary: Récupérer la liste de toutes les batailles disponibles
+      operationId: getBattles
+      responses:
+        '200':
+          description: Liste des batailles récupérée avec succès
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Battle'
+    post:
+      summary: Créer une nouvelle bataille
+      operationId: createBattle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BattleInput'
+      responses:
+        '201':
+          description: Bataille créée avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Battle'
+        '400':
+          description: Requête invalide
+
+  /{id}:
+    get:
+      summary: Récupérer les détails d'une bataille spécifique
+      operationId: getBattleById
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Identifiant numérique de la bataille
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Détails de la bataille récupérés avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Battle'
+        '404':
+          description: Bataille non trouvée
+    put:
+      summary: Mettre à jour une bataille existante
+      operationId: updateBattle
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Identifiant numérique de la bataille
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BattleInput'
+      responses:
+        '200':
+          description: Bataille mise à jour avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Battle'
+        '404':
+          description: Bataille non trouvée
+    delete:
+      summary: Supprimer une bataille
+      operationId: deleteBattle
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Identifiant numérique de la bataille
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Bataille supprimée avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Battle deleted successfully
+        '404':
+          description: Bataille non trouvée
+
+  /{id}/choice:
+    get:
+      summary: Récupérer la liste des choix disponibles pour une bataille
+      operationId: getChoices
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Identifiant numérique de la bataille
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Liste des choix récupérée avec succès
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        '404':
+          description: Bataille non trouvée
+
+  /{id}/winner:
+    get:
+      summary: Déterminer le gagnant entre deux choix pour une bataille
+      operationId: getWinner
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Identifiant numérique de la bataille
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - choice1
+                - choice2
+              properties:
+                choice1:
+                  type: string
+                  description: Premier choix (du joueur)
+                choice2:
+                  type: string
+                  description: Deuxième choix (de l'adversaire)
+      responses:
+        '200':
+          description: Résultat du duel récupéré avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  winner:
+                    type: string
+                    description: Résultat du duel
+                    example: win
+        '404':
+          description: Bataille non trouvée
+
+components:
+  schemas:
+    Battle:
+      type: object
+      required:
+        - id
+        - name
+        - choice
+        - checkFunction
+      properties:
+        id:
+          type: integer
+          description: Identifiant unique de la bataille
+          example: 1704067200000
+        name:
+          type: string
+          description: Nom du type de bataille
+          example: shifoumi
+        choice:
+          type: array
+          items:
+            type: string
+          description: Liste des choix disponibles pour cette bataille
+          example: ["pierre", "feuille", "ciseau"]
+        checkFunction:
+          type: string
+          description: Fonction JavaScript qui détermine le gagnant entre deux choix
+          example: "(choice1, choice2) => { if(choice1 === choice2) return 'draw'; ... }"
+
+    BattleInput:
+      type: object
+      required:
+        - name
+        - choice
+        - checkFunction
+      properties:
+        name:
+          type: string
+          description: Nom du type de bataille
+          example: shifoumi
+        choice:
+          type: array
+          items:
+            type: string
+          description: Liste des choix disponibles
+          example: ["pierre", "feuille", "ciseau"]
+        checkFunction:
+          type: string
+          description: Fonction JavaScript qui détermine le gagnant entre deux choix
+          example: "(choice1, choice2) => { if(choice1 === choice2) return 'draw'; ... }"
