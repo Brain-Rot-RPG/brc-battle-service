@@ -17,6 +17,6 @@ router.post('/', createBattle);
 router.put('/:id', updateBattle);
 router.delete('/:id', deleteBattle);
 router.get('/:id/choice', getChoices);
-router.get('/:id/winner', getChoices);
+router.get('/:id/winner', getWinner);
 
 export default router;
